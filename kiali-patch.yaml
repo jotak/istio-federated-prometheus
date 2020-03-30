@@ -1,0 +1,4 @@
+spec:
+  external_services:
+    prometheus:
+      url: http://master-prometheus.istio-system:9090

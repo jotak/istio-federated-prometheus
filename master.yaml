@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: master-prometheus
+  name: master-prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: master-prometheus
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: master-prometheus
+    spec:
+      containers:
+      - args:
+        - --storage.tsdb.retention=48h
+        - --config.file=/etc/prometheus/prometheus.yml
+        image: docker.io/prom/prometheus:v2.15.1
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /-/healthy
+            port: 9090
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: prometheus
+        ports:
+        - containerPort: 9090
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /-/ready
+            port: 9090
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /etc/prometheus
+          name: config-volume
+      # securityContext: {}
+      # serviceAccount: prometheus
+      # serviceAccountName: prometheus
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: master-prometheus
+        name: config-volume
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: master-prometheus
+  labels:
+    app: master-prometheus
+spec:
+  ports:
+    - name: http
+      port: 9090
+  selector:
+    app: master-prometheus

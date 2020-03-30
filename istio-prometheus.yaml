@@ -1,0 +1,231 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: prometheus
+    operator.istio.io/component: AddonComponents
+    operator.istio.io/managed: Reconcile
+    operator.istio.io/version: 1.5.1
+    release: istio
+  name: prometheus
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: prometheus
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      creationTimestamp: null
+      labels:
+        app: prometheus
+        release: istio
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+            weight: 2
+          - preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - ppc64le
+            weight: 2
+          - preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - s390x
+            weight: 2
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+                - ppc64le
+                - s390x
+      containers:
+      - args:
+        - --storage.tsdb.retention=2h
+        - --config.file=/etc/prometheus/prometheus.yml
+        image: docker.io/prom/prometheus:v2.15.1
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /-/healthy
+            port: 9090
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: prometheus
+        ports:
+        - containerPort: 9090
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /-/ready
+            port: 9090
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          requests:
+            cpu: 10m
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/prometheus
+          name: config-volume
+        - mountPath: /etc/istio-certs
+          name: istio-certs
+      - args:
+        - proxy
+        - sidecar
+        - --domain
+        - $(POD_NAMESPACE).svc.cluster.local
+        - --configPath
+        - /etc/istio/proxy
+        - --binaryPath
+        - /usr/local/bin/envoy
+        - --serviceCluster
+        - istio-proxy-prometheus
+        - --drainDuration
+        - 45s
+        - --parentShutdownDuration
+        - 1m0s
+        - --discoveryAddress
+        - istio-pilot.istio-system.svc:15012
+        - --proxyLogLevel=warning
+        - --proxyComponentLogLevel=misc:error
+        - --connectTimeout
+        - 10s
+        - --proxyAdminPort
+        - "15000"
+        - --controlPlaneAuthPolicy
+        - NONE
+        - --dnsRefreshRate
+        - 300s
+        - --statusPort
+        - "15020"
+        - --trust-domain=cluster.local
+        - --controlPlaneBootstrap=false
+        env:
+        - name: OUTPUT_CERTS
+          value: /etc/istio-certs
+        - name: JWT_POLICY
+          value: first-party-jwt
+        - name: PILOT_CERT_PROVIDER
+          value: istiod
+        - name: CA_ADDR
+          value: istio-pilot.istio-system.svc:15012
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: INSTANCE_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: ISTIO_META_POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: ISTIO_META_CONFIG_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: ISTIO_META_MESH_ID
+          value: cluster.local
+        - name: ISTIO_META_CLUSTER_ID
+          value: Kubernetes
+        image: docker.io/istio/proxyv2:1.5.1
+        imagePullPolicy: IfNotPresent
+        name: istio-proxy
+        ports:
+        - containerPort: 15090
+          name: http-envoy-prom
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /healthz/ready
+            port: 15020
+            scheme: HTTP
+          initialDelaySeconds: 1
+          periodSeconds: 2
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/run/secrets/istio
+          name: istiod-ca-cert
+        - mountPath: /etc/istio/proxy
+          name: istio-envoy
+        - mountPath: /etc/istio-certs/
+          name: istio-certs
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: prometheus
+      serviceAccountName: prometheus
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: prometheus
+        name: config-volume
+      - emptyDir:
+          medium: Memory
+        name: istio-certs
+      - emptyDir:
+          medium: Memory
+        name: istio-envoy
+      - configMap:
+          defaultMode: 420
+          name: istio-ca-root-cert
+        name: istiod-ca-cert
