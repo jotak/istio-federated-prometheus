@@ -1,0 +1,38 @@
+apiVersion: "monitoring.kiali.io/v1alpha1"
+kind: MonitoringDashboard
+metadata:
+  name: tcp-federated
+spec:
+  title: TCP Federated
+  discoverOn: "istio_tcp_sent_bytes_total:rate1m"
+  items:
+  - chart:
+      name: "TCP sent (1 min-rate)"
+      unit: "bitrate"
+      spans: 12
+      metricName: "istio_tcp_sent_bytes_total:rate1m"
+      dataType: "raw"
+      aggregations:
+        - label: "destination_service_name"
+          displayName: "Destination service"
+        - label: "destination_app"
+          displayName: "Destination app"
+        - label: "destination_version"
+          displayName: "Destination version"
+        - label: "response_flags"
+          displayName: "Response flags"
+  - chart:
+      name: "TCP received (1 min-rate)"
+      unit: "bitrate"
+      spans: 12
+      metricName: "istio_tcp_received_bytes_total:rate1m"
+      dataType: "raw"
+      aggregations:
+        - label: "destination_service_name"
+          displayName: "Destination service"
+        - label: "destination_app"
+          displayName: "Destination app"
+        - label: "destination_version"
+          displayName: "Destination version"
+        - label: "response_flags"
+          displayName: "Response flags"

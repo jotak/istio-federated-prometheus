@@ -18,21 +18,11 @@ This is going to:
 
 Note: there is a known issue with this guide, about [summing metrics before getting their rates](https://www.robustperception.io/rate-then-sum-never-sum-then-rate), also mentioned here: https://discuss.istio.io/t/feedback-requested-production-monitoring-with-prometheus/5685.
 
-## Exposing "master" Prometheus
+Assuming Kiali is deployed with [kiali-operator](https://kiali.io/documentation/getting-started/#_install_kiali_latest), you can amend Kiali configuration to point to "master" prometheus:
 
 ```
-make expose
+make patch-kiali-1
 ```
-
-Exposes the "master" prometheus via port-forward to http://localhost:9091
-
-## Patching Kiali configuration
-
-```
-make patch-kiali
-```
-
-Assuming Kiali is deployed with [kiali-operator](https://kiali.io/documentation/getting-started/#_install_kiali_latest), will amend Kiali configuration to point to "master" prometheus.
 
 ## Production-ready Istio #2
 
@@ -43,3 +33,18 @@ But it comes with a serious drawback: consumers (Grafana, Kiali ...) would be br
 ```
 make istio-prod-ready-2
 ```
+
+Assuming Kiali is deployed with [kiali-operator](https://kiali.io/documentation/getting-started/#_install_kiali_latest), you can amend Kiali configuration to have an alternative Prometheus URL pointing to "master" prometheus:
+
+```
+make patch-kiali-2
+```
+
+## Exposing "master" Prometheus
+
+```
+make expose
+```
+
+Exposes the "master" prometheus via port-forward to http://localhost:9091
+

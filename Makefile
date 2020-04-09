@@ -27,7 +27,12 @@ expose:
 	@echo "Master Prometheus: http://localhost:9091/"
 	${K8S_BIN} port-forward svc/master-prometheus 9091:9090 -n istio-system
 
-patch-kiali: .ensure-yq
+patch-kiali-1: .ensure-yq
 	${K8S_BIN} get kiali kiali -n kiali-operator -o yaml \
 		| yq w - spec.external_services.prometheus.url http://master-prometheus.istio-system:9090 \
+		| ${K8S_BIN} apply -f -
+
+patch-kiali-2: .ensure-yq
+	${K8S_BIN} get kiali kiali -n kiali-operator -o yaml \
+		| yq w - spec.external_services.prometheus.custom_metrics_url http://master-prometheus.istio-system:9090 \
 		| ${K8S_BIN} apply -f -
