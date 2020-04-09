@@ -15,6 +15,14 @@ data:
         regex: "istio:(.*)"
         target_label: __name__
         action: replace
+      - source_labels: [source_app]
+        regex: '(.*)'
+        replacement: '$1'
+        target_label: app
+      - source_labels: [source_version]
+        regex: '(.*)'
+        replacement: '$1'
+        target_label: version
       params:
         'match[]':
         - '{__name__=~"istio:(.*)"}'

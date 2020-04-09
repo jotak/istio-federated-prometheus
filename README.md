@@ -1,6 +1,8 @@
 # Istio Federated Prometheus
 
-Some templates &amp; Makefile to setup federated Prometheus for Istio
+Some templates &amp; Makefile to setup federated Prometheus for Istio.
+
+These steps assume Istio 1.5 (or above) is already installed in namespace istio-system.
 
 ## Production-ready Istio #1
 
