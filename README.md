@@ -28,13 +28,15 @@ make patch-kiali-1
 
 Similar to the former, but avoids the pitfall of summing before rating (in other words: without a bug).
 
-But it comes with a serious drawback: consumers (Grafana, Kiali ...) would be broken. So Grafana dashboards would need to be updated. And for Kiali, that's a different story, no fix available yet.
+But it comes with a serious drawback: consumers (Grafana, Kiali ...) would be broken. So Grafana dashboards would need to be updated. And for Kiali, that's a different story, no fix available yet (but it can still point to Istio's Prometheus w/o problem).
 
 ```
 make istio-prod-ready-2
 ```
 
-Assuming Kiali is deployed with [kiali-operator](https://kiali.io/documentation/getting-started/#_install_kiali_latest), you can amend Kiali configuration to have an alternative Prometheus URL pointing to "master" prometheus:
+For Kiali, the recommended configuration would be then to keep pointing to Istio's Prometheus, and have the alternative Prometheus URL pointing to the "master" Prometheus, and install two additional dashboards to show the metrics with longer retention.
+
+Assuming Kiali is deployed with [kiali-operator](https://kiali.io/documentation/getting-started/#_install_kiali_latest):
 
 ```
 make patch-kiali-2
