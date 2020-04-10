@@ -36,3 +36,5 @@ patch-kiali-2: .ensure-yq
 	${K8S_BIN} get kiali kiali -n kiali-operator -o yaml \
 		| yq w - spec.external_services.prometheus.custom_metrics_url http://master-prometheus.istio-system:9090 \
 		| ${K8S_BIN} apply -f -
+	${K8S_BIN} apply -f ./kiali-master-2-dashboard-http.yml -n istio-system
+	${K8S_BIN} apply -f ./kiali-master-2-dashboard-tcp.yml -n istio-system
