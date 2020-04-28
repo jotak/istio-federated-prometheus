@@ -49,8 +49,8 @@ spec:
         - mountPath: /etc/prometheus
           name: config-volume
       # securityContext: {}
-      # serviceAccount: prometheus
-      # serviceAccountName: prometheus
+      serviceAccount: prometheus
+      serviceAccountName: prometheus
       volumes:
       - configMap:
           defaultMode: 420

@@ -1,0 +1,57 @@
+apiVersion: v1
+data:
+  prometheus.yml: |-
+    global:
+      scrape_interval: 15s
+    scrape_configs:
+    - job_name: 'istio-prometheus'
+      honor_labels: true
+      metrics_path: '/federate'
+      static_configs:
+      - targets:
+        - prometheus.istio-system:9090
+      metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "istio:(.*)"
+        target_label: __name__
+        action: replace
+      - source_labels: [source_app]
+        regex: '(.*)'
+        replacement: '$1'
+        target_label: app
+      - source_labels: [source_version]
+        regex: '(.*)'
+        replacement: '$1'
+        target_label: version
+      params:
+        'match[]':
+        - '{__name__=~"istio:(.*)"}'
+
+    - job_name: 'other-pod-metrics'
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+          - default
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        action: drop
+        regex: istio.*
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+
+kind: ConfigMap
+metadata:
+  labels:
+    app: master-prometheus
+  name: master-prometheus

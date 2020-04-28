@@ -20,6 +20,10 @@ istio-prod-ready-2:
 	${K8S_BIN} delete pod -l app=prometheus -n istio-system ; \
 	${K8S_BIN} delete pod -l app=master-prometheus -n istio-system
 
+masterprom-scrape-pods:
+	${K8S_BIN} apply -f ./master-cm-2-plus.yaml -n istio-system ; \
+	${K8S_BIN} delete pod -l app=master-prometheus -n istio-system
+
 watch:
 	${K8S_BIN} get pods -n istio-system -w
 

@@ -1,0 +1,126 @@
+apiVersion: "monitoring.kiali.io/v1alpha1"
+kind: MonitoringDashboard
+metadata:
+  name: http-federated
+spec:
+  title: HTTP Federated
+  discoverOn: "istio_requests_total:rate1m"
+  items:
+  - chart:
+      name: "Request duration (1 min-rate, p50)"
+      unit: "seconds"
+      unitScale: 0.001
+      spans: 4
+      metricName: istio_request_duration_milliseconds:p50:rate1m
+      dataType: "raw"
+      aggregations:
+        - label: "destination_service_name"
+          displayName: "Destination service"
+        - label: "destination_app"
+          displayName: "Destination app"
+        - label: "destination_version"
+          displayName: "Destination version"
+        - label: "response_code"
+          displayName: "Response code"
+        - label: "grpc_response_status"
+          displayName: "GRPC Status"
+        - label: "response_flags"
+          displayName: "Response flags"
+  - chart:
+      name: "Request duration (1 min-rate, p95)"
+      unit: "seconds"
+      unitScale: 0.001
+      spans: 4
+      metricName: istio_request_duration_milliseconds:p95:rate1m
+      dataType: "raw"
+      aggregations:
+        - label: "destination_service_name"
+          displayName: "Destination service"
+        - label: "destination_app"
+          displayName: "Destination app"
+        - label: "destination_version"
+          displayName: "Destination version"
+        - label: "response_code"
+          displayName: "Response code"
+        - label: "grpc_response_status"
+          displayName: "GRPC Status"
+        - label: "response_flags"
+          displayName: "Response flags"
+  - chart:
+      name: "Request duration (1 min-rate, p99)"
+      unit: "seconds"
+      unitScale: 0.001
+      spans: 4
+      metricName: istio_request_duration_milliseconds:p99:rate1m
+      dataType: "raw"
+      aggregations:
+        - label: "destination_service_name"
+          displayName: "Destination service"
+        - label: "destination_app"
+          displayName: "Destination app"
+        - label: "destination_version"
+          displayName: "Destination version"
+        - label: "response_code"
+          displayName: "Response code"
+        - label: "grpc_response_status"
+          displayName: "GRPC Status"
+        - label: "response_flags"
+          displayName: "Response flags"
+
+  - chart:
+      name: "Request volume (1 min-rate)"
+      unit: "ops"
+      spans: 4
+      metricName: "istio_requests_total:rate1m"
+      dataType: "raw"
+      aggregations:
+        - label: "destination_service_name"
+          displayName: "Destination service"
+        - label: "destination_app"
+          displayName: "Destination app"
+        - label: "destination_version"
+          displayName: "Destination version"
+        - label: "response_code"
+          displayName: "Response code"
+        - label: "grpc_response_status"
+          displayName: "GRPC Status"
+        - label: "response_flags"
+          displayName: "Response flags"
+  - chart:
+      name: "Request size (1 min-rate)"
+      unit: "bytes"
+      spans: 4
+      metricName: "istio_request_bytes_bucket:rate1m"
+      dataType: "raw"
+      aggregations:
+        - label: "destination_service_name"
+          displayName: "Destination service"
+        - label: "destination_app"
+          displayName: "Destination app"
+        - label: "destination_version"
+          displayName: "Destination version"
+        - label: "response_code"
+          displayName: "Response code"
+        - label: "grpc_response_status"
+          displayName: "GRPC Status"
+        - label: "response_flags"
+          displayName: "Response flags"
+  - chart:
+      name: "Response size (1 min-rate)"
+      unit: "bytes"
+      spans: 4
+      metricName: "istio_response_bytes_bucket:rate1m"
+      dataType: "raw"
+      aggregations:
+        - label: "destination_service_name"
+          displayName: "Destination service"
+        - label: "destination_app"
+          displayName: "Destination app"
+        - label: "destination_version"
+          displayName: "Destination version"
+        - label: "response_code"
+          displayName: "Response code"
+        - label: "grpc_response_status"
+          displayName: "GRPC Status"
+        - label: "response_flags"
+          displayName: "Response flags"
